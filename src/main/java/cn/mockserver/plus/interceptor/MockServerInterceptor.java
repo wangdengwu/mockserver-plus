@@ -18,6 +18,8 @@ import org.mockserver.scheduler.Scheduler;
 import org.mockserver.servlet.responsewriter.ServletResponseWriter;
 import org.mockserver.socket.tls.NettySslContextFactory;
 import org.slf4j.event.Level;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import javax.annotation.PreDestroy;
@@ -38,12 +40,12 @@ public class MockServerInterceptor implements HandlerInterceptor {
     private EventLoopGroup workerGroup = new NioEventLoopGroup(ConfigurationProperties.nioEventLoopThreadCount(), new Scheduler.SchedulerThreadFactory(this.getClass().getSimpleName() + "-eventLoop"));
 
     @SuppressWarnings("WeakerAccess")
-    public MockServerInterceptor() {
+    public MockServerInterceptor(String apiServer) {
         this.mockServerLogger = new MockServerLogger(MockServerEventLog.class);
         this.httpServletRequestToMockServerRequestDecoder = new HttpServletRequestToMockServerHttpRequestDecoder(this.mockServerLogger);
         this.scheduler = new Scheduler(mockServerLogger);
         this.httpStateHandler = new HttpState(this.mockServerLogger, this.scheduler);
-        this.actionHandler = new HttpActionHandler(workerGroup, httpStateHandler, ProxyConfiguration.proxyConfiguration(), new NettySslContextFactory(mockServerLogger));
+        this.actionHandler = new HttpActionHandler(workerGroup, httpStateHandler, ProxyConfiguration.proxyConfiguration(ProxyConfiguration.Type.HTTP, apiServer), new NettySslContextFactory(mockServerLogger));
     }
 
     @PreDestroy

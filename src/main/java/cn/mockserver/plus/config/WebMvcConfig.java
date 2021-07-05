@@ -20,9 +20,10 @@ import java.util.Arrays;
  */
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
+    private static final String[] ORIGINS = new String[]{"GET", "POST", "PUT", "DELETE"};
+
     @Value("${mockserver.api.server}")
     private String apiServer;
-    private static final String[] ORIGINS = new String[]{"GET", "POST", "PUT", "DELETE"};
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
@@ -32,11 +33,6 @@ public class WebMvcConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         ConfigurationProperties.enableCORSForAllResponses(true);
-//        ConfigurationProperties.logLevel(Level.ERROR.levelStr);
-//        ConfigurationProperties.disableSystemOut(true);
-        ConfigurationProperties.watchInitializationJson(true);
-        ConfigurationProperties.forwardHttpProxy(apiServer);
-        ConfigurationProperties.initializationJsonPath("/Users/wangdengwu/DengXian/mockserver-config/initializerJson.json");
         registry.addInterceptor(mockServerInterceptor())
                 .addPathPatterns("/**")
                 .excludePathPatterns(
@@ -55,6 +51,6 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     @Bean
     public MockServerInterceptor mockServerInterceptor() {
-        return new MockServerInterceptor();
+        return new MockServerInterceptor(apiServer);
     }
 }
