@@ -18,9 +18,8 @@ deployments/
 *.iws
 *.iml
 *.ipr
-
+*.db
 *.class
-
 *.log
 
 # Package Files #
