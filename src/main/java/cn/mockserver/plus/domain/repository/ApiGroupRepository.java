@@ -19,4 +19,12 @@ public interface ApiGroupRepository extends CrudRepository<ApiGroup, Integer> {
      * @return 对应子节点
      */
     List<ApiGroup> findByParentId(Integer parentId);
+
+    /**
+     * 查询是否还有子节点
+     *
+     * @param parentId
+     * @return 子节点个数
+     */
+    Integer countByParentId(Integer parentId);
 }

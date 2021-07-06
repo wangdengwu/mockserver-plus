@@ -67,6 +67,10 @@ public class ApiGroupService {
         //非根节点才需要查询父节点
         if (parentId != ApiGroup.RootParentId) {
             parent = apiGroupRepository.findById(parentId);
+            //非-1节点如果查不到，则报错
+            if (!parent.isPresent()) {
+                return null;
+            }
         }
         Integer level = parent.isPresent() ? parent.get().getLevel() : ApiGroup.RootParentLevel;
         if (level > ApiGroup.MaxLevel) {
@@ -78,5 +82,27 @@ public class ApiGroupService {
         apiGroup.setLevel(++level);
         ApiGroup save = apiGroupRepository.save(apiGroup);
         return new ApiGroupVo(save);
+    }
+
+    public ApiGroupVo edit(Integer id, String label) {
+        Optional<ApiGroup> apiGroup = apiGroupRepository.findById(id);
+        if (apiGroup.isPresent()) {
+            apiGroup.get().setLabel(label);
+            ApiGroup save = apiGroupRepository.save(apiGroup.get());
+            return new ApiGroupVo(save);
+        }
+        return null;
+    }
+
+    public ApiGroupVo delete(Integer id) {
+        Optional<ApiGroup> apiGroup = apiGroupRepository.findById(id);
+        if (apiGroup.isPresent()) {
+            Integer childrenCount = apiGroupRepository.countByParentId(id);
+            if (childrenCount == 0) {
+                apiGroupRepository.deleteById(id);
+                return new ApiGroupVo(apiGroup.get());
+            }
+        }
+        return null;
     }
 }

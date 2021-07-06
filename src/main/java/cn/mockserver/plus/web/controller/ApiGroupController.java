@@ -33,4 +33,24 @@ public class ApiGroupController extends BaseController {
             return error("添加失败!");
         }
     }
+
+    @PostMapping("/group/delete")
+    public ResultAjax delete(@RequestParam Integer id) {
+        ApiGroupVo delete = apiGroupService.delete(id);
+        if (delete != null) {
+            return success("ok", delete);
+        } else {
+            return error("删除失败，请检查是否有子节点。");
+        }
+    }
+
+    @PostMapping("/group/edit")
+    public ResultAjax edit(@RequestParam Integer id, @RequestParam String label) {
+        ApiGroupVo edit = apiGroupService.edit(id, label);
+        if (edit != null) {
+            return success("ok", edit);
+        } else {
+            return error("修改失败!");
+        }
+    }
 }
