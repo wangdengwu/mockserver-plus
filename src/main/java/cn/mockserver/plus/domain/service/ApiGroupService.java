@@ -2,9 +2,11 @@ package cn.mockserver.plus.domain.service;
 
 import cn.mockserver.plus.domain.entity.ApiGroup;
 import cn.mockserver.plus.domain.repository.ApiGroupRepository;
+import cn.mockserver.plus.web.view.ApiExpectationVo;
 import cn.mockserver.plus.web.view.ApiGroupVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -14,6 +16,8 @@ import java.util.stream.Collectors;
  */
 @Service
 public class ApiGroupService {
+    @Autowired
+    private ApiExpectationService apiExpectationService;
     @Autowired
     private ApiGroupRepository apiGroupRepository;
 
@@ -94,11 +98,17 @@ public class ApiGroupService {
         return null;
     }
 
+    @Transactional
+    @SuppressWarnings("all")
     public ApiGroupVo delete(Integer id) {
         Optional<ApiGroup> apiGroup = apiGroupRepository.findById(id);
         if (apiGroup.isPresent()) {
             Integer childrenCount = apiGroupRepository.countByParentId(id);
             if (childrenCount == 0) {
+                List<ApiExpectationVo> apiExpectationVoList = apiExpectationService.list(id);
+                apiExpectationVoList.forEach(apiExpectationVo -> {
+                    apiExpectationService.delete(apiExpectationVo.getId());
+                });
                 apiGroupRepository.deleteById(id);
                 return new ApiGroupVo(apiGroup.get());
             }
