@@ -29,7 +29,7 @@ public class ApiExpectation {
     private String path;
     @Column(length = 1024)
     private String requestBody;
-    @Column(length = 32)
+    @Column(length = 64)
     private String requestBodyType;
     @Column(nullable = false)
     private Integer statusCode;

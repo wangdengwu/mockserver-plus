@@ -17,5 +17,5 @@ public interface ApiExpectationRepository extends CrudRepository<ApiExpectation,
      * @param groupId
      * @return Expectation List
      */
-    List<ApiExpectation> findByGroupId(Integer groupId);
+    List<ApiExpectation> findByGroupIdOrderByCreatedDesc(Integer groupId);
 }

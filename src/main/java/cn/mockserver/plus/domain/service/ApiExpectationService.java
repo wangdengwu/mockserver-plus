@@ -139,7 +139,7 @@ public class ApiExpectationService {
     }
 
     public List<ApiExpectationVo> list(Integer groupId) {
-        List<ApiExpectation> apiExpectationList = apiExpectationRepository.findByGroupId(groupId);
+        List<ApiExpectation> apiExpectationList = apiExpectationRepository.findByGroupIdOrderByCreatedDesc(groupId);
         return apiExpectationList.stream().map(apiExpectation -> {
             return map2ApiExpectationVo(apiExpectation);
         }).collect(Collectors.toList());
@@ -197,7 +197,7 @@ public class ApiExpectationService {
         apiExpectation.setId(apiExpectationVo.getId());
         apiExpectation.setCreated(apiExpectationVo.getCreated());
         apiExpectation.setApiStatus(apiExpectationVo.getApiStatus());
-        apiExpectation.setMethod(apiExpectationVo.getHttpRequest().getMethod());
+        apiExpectation.setMethod(apiExpectationVo.getHttpRequest().getMethod().toLowerCase());
         apiExpectation.setName(apiExpectationVo.getName());
         apiExpectation.setGroupId(apiExpectationVo.getGroupId());
         apiExpectation.setPath(apiExpectationVo.getHttpRequest().getPath());
