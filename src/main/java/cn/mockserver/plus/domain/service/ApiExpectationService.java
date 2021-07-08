@@ -13,6 +13,7 @@ import cn.mockserver.plus.web.view.ApiHttpResponseVo;
 import com.github.yitter.idgen.YitIdHelper;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import lombok.extern.slf4j.Slf4j;
+import net.minidev.json.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.mockserver.mock.Expectation;
 import org.mockserver.model.*;
@@ -20,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.PostConstruct;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,6 +44,14 @@ public class ApiExpectationService {
     private ApiHeaderRepository apiHeaderRepository;
     @Autowired
     private ApiQueryStringParameterRepository apiQueryStringParameterRepository;
+
+    @PostConstruct
+    public void init() {
+        apiExpectationRepository.findAll().forEach(apiExpectation -> {
+            Expectation expectation = map2Expectation(map2ApiExpectationVo(apiExpectation));
+            mockServerInterceptor.add(expectation);
+        });
+    }
 
     @Transactional
     public ApiExpectationVo add(ApiExpectationVo apiExpectationVo) {
@@ -105,8 +115,13 @@ public class ApiExpectationService {
             apiQueryStringParameterRepository.saveAll(queryStringParameterList);
         }
         String apiStatus = apiExpectationVo.getApiStatus();
-        if (StringUtils.equals("done", apiStatus)) {
-            mockServerInterceptor.delete(map2HttpRequest(apiExpectationVo.getHttpRequest()));
+
+        JSONObject body = new JSONObject();
+        body.put("id", apiExpectationVo.getId().toString());
+        HttpRequest httpRequest = HttpRequest.request().withBody(body.toJSONString()).withQueryStringParameter("type", "EXPECTATIONS");
+        mockServerInterceptor.delete(httpRequest);
+        if (!StringUtils.equals("done", apiStatus)) {
+            mockServerInterceptor.add(map2Expectation(apiExpectationVo));
         }
         return apiExpectationVo;
     }
@@ -114,10 +129,10 @@ public class ApiExpectationService {
     @Transactional
     public void delete(Long id) {
         Optional<ApiExpectation> apiExpectation = apiExpectationRepository.findById(id);
-        List<ApiHeader> apiHeaderList = apiHeaderRepository.findByExpectationId(id);
-        List<ApiQueryStringParameter> apiQueryStringParameterList = apiQueryStringParameterRepository.findByExpectationId(id);
-        ApiHttpRequestVo apiHttpRequestVo = map2ApiHttpRequestVo(apiExpectation.get(), apiHeaderList, apiQueryStringParameterList);
-        mockServerInterceptor.delete(map2HttpRequest(apiHttpRequestVo));
+        JSONObject body = new JSONObject();
+        body.put("id", apiExpectation.get().getId().toString());
+        HttpRequest httpRequest = HttpRequest.request().withBody(body.toJSONString()).withQueryStringParameter("type", "EXPECTATIONS");
+        mockServerInterceptor.delete(httpRequest);
         apiQueryStringParameterRepository.deleteByExpectationId(id);
         apiHeaderRepository.deleteByExpectationId(id);
         apiExpectationRepository.deleteById(id);
@@ -126,23 +141,27 @@ public class ApiExpectationService {
     public List<ApiExpectationVo> list(Integer groupId) {
         List<ApiExpectation> apiExpectationList = apiExpectationRepository.findByGroupId(groupId);
         return apiExpectationList.stream().map(apiExpectation -> {
-            Long id = apiExpectation.getId();
-            List<ApiHeader> apiHeaderList = apiHeaderRepository.findByExpectationId(id);
-            List<ApiQueryStringParameter> apiQueryStringParameterList = apiQueryStringParameterRepository.findByExpectationId(id);
-            ApiExpectationVo apiExpectationVo = new ApiExpectationVo();
-            apiExpectationVo.setId(id);
-            apiExpectationVo.setApiStatus(apiExpectation.getApiStatus());
-            apiExpectationVo.setCreated(apiExpectation.getCreated());
-            apiExpectationVo.setGroupId(apiExpectation.getGroupId());
-            apiExpectationVo.setPriority(apiExpectation.getPriority());
-            apiExpectationVo.setName(apiExpectation.getName());
-            ApiHttpResponseVo apiHttpResponseVo = new ApiHttpResponseVo();
-            apiHttpResponseVo.setStatusCode(apiExpectation.getStatusCode());
-            apiHttpResponseVo.setBody(apiExpectation.getResponseBody());
-            apiExpectationVo.setHttpResponse(apiHttpResponseVo);
-            apiExpectationVo.setHttpRequest(map2ApiHttpRequestVo(apiExpectation, apiHeaderList, apiQueryStringParameterList));
-            return apiExpectationVo;
+            return map2ApiExpectationVo(apiExpectation);
         }).collect(Collectors.toList());
+    }
+
+    private ApiExpectationVo map2ApiExpectationVo(ApiExpectation apiExpectation) {
+        Long id = apiExpectation.getId();
+        List<ApiHeader> apiHeaderList = apiHeaderRepository.findByExpectationId(id);
+        List<ApiQueryStringParameter> apiQueryStringParameterList = apiQueryStringParameterRepository.findByExpectationId(id);
+        ApiExpectationVo apiExpectationVo = new ApiExpectationVo();
+        apiExpectationVo.setId(id);
+        apiExpectationVo.setApiStatus(apiExpectation.getApiStatus());
+        apiExpectationVo.setCreated(apiExpectation.getCreated());
+        apiExpectationVo.setGroupId(apiExpectation.getGroupId());
+        apiExpectationVo.setPriority(apiExpectation.getPriority());
+        apiExpectationVo.setName(apiExpectation.getName());
+        ApiHttpResponseVo apiHttpResponseVo = new ApiHttpResponseVo();
+        apiHttpResponseVo.setStatusCode(apiExpectation.getStatusCode());
+        apiHttpResponseVo.setBody(apiExpectation.getResponseBody());
+        apiExpectationVo.setHttpResponse(apiHttpResponseVo);
+        apiExpectationVo.setHttpRequest(map2ApiHttpRequestVo(apiExpectation, apiHeaderList, apiQueryStringParameterList));
+        return apiExpectationVo;
     }
 
     private ApiHttpRequestVo map2ApiHttpRequestVo(ApiExpectation apiExpectation, List<ApiHeader> apiHeaderList, List<ApiQueryStringParameter> apiQueryStringParameterList) {
