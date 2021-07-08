@@ -105,4 +105,8 @@ public class ApiGroupService {
         }
         return null;
     }
+
+    public Boolean haveGroup(Integer id) {
+        return apiGroupRepository.findById(id).isPresent();
+    }
 }

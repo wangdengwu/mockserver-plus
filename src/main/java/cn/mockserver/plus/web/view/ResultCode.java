@@ -8,15 +8,15 @@ public enum ResultCode {
     /**
      * 成功
      */
-    SUCCESS("成功", "200"),
+    SUCCESS("成功", 200),
     /**
      * 失败
      */
-    FAILURE("失败", "500");
+    FAILURE("失败", 500);
     private String name;
-    private String code;
+    private Integer code;
 
-    ResultCode(String name, String code) {
+    ResultCode(String name, Integer code) {
         this.name = name;
         this.code = code;
     }
@@ -29,11 +29,11 @@ public enum ResultCode {
         this.name = name;
     }
 
-    public String getCode() {
+    public Integer getCode() {
         return code;
     }
 
-    public void setCode(String code) {
+    public void setCode(Integer code) {
         this.code = code;
     }
 }

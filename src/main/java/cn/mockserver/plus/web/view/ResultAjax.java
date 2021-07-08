@@ -7,7 +7,7 @@ import lombok.Data;
  */
 @Data
 public class ResultAjax {
-    private String code;
+    private Integer code;
     private String message;
     private Boolean success;
     private Object data;

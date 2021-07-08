@@ -8,6 +8,7 @@ import org.mockserver.log.MockServerEventLog;
 import org.mockserver.log.model.LogEntry;
 import org.mockserver.logging.MockServerLogger;
 import org.mockserver.mappers.HttpServletRequestToMockServerHttpRequestDecoder;
+import org.mockserver.mock.Expectation;
 import org.mockserver.mock.HttpState;
 import org.mockserver.mock.action.http.HttpActionHandler;
 import org.mockserver.model.HttpRequest;
@@ -18,13 +19,12 @@ import org.mockserver.scheduler.Scheduler;
 import org.mockserver.servlet.responsewriter.ServletResponseWriter;
 import org.mockserver.socket.tls.NettySslContextFactory;
 import org.slf4j.event.Level;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import javax.annotation.PreDestroy;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.List;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
@@ -68,7 +68,7 @@ public class MockServerInterceptor implements HandlerInterceptor {
         return false;
     }
 
-    public void service(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) {
+    private void service(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) {
 
         ResponseWriter responseWriter = new ServletResponseWriter(new MockServerLogger(), httpServletResponse);
         HttpRequest request = null;
@@ -100,5 +100,13 @@ public class MockServerInterceptor implements HandlerInterceptor {
             );
             responseWriter.writeResponse(request, response().withStatusCode(BAD_REQUEST.code()).withBody(e.getMessage()), true);
         }
+    }
+
+    public List<Expectation> add(Expectation... expectations) {
+        return httpStateHandler.add(expectations);
+    }
+
+    public void delete(HttpRequest httpRequest) {
+        httpStateHandler.clear(httpRequest);
     }
 }
