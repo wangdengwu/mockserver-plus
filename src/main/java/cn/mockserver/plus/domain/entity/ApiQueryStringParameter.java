@@ -21,6 +21,6 @@ public class ApiQueryStringParameter {
     @Column(length = 32)
     private String name;
 
-    @Column
+    @Column(length = 2048)
     private String value;
 }

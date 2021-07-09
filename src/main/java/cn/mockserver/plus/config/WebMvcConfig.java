@@ -40,6 +40,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
                                 "/",
                                 "/_mock_server/**",
                                 "/error",
+                                "/favicon.ico",
                                 "/*.html",
                                 "/**/*.js",
                                 "/**/*.ttf",

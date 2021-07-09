@@ -12,6 +12,7 @@ import org.mockserver.mock.Expectation;
 import org.mockserver.mock.HttpState;
 import org.mockserver.mock.action.http.HttpActionHandler;
 import org.mockserver.model.HttpRequest;
+import org.mockserver.model.HttpResponse;
 import org.mockserver.model.MediaType;
 import org.mockserver.proxyconfiguration.ProxyConfiguration;
 import org.mockserver.responsewriter.ResponseWriter;
@@ -30,6 +31,9 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.mockserver.model.HttpResponse.response;
 
+/**
+ * @author wangdengwu
+ */
 public class MockServerInterceptor implements HandlerInterceptor {
 
     private MockServerLogger mockServerLogger;
@@ -108,5 +112,9 @@ public class MockServerInterceptor implements HandlerInterceptor {
 
     public void delete(HttpRequest httpRequest) {
         httpStateHandler.clear(httpRequest);
+    }
+
+    public HttpResponse retrieve(HttpRequest httpRequest) {
+        return httpStateHandler.retrieve(httpRequest);
     }
 }

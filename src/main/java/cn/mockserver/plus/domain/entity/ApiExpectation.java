@@ -27,7 +27,7 @@ public class ApiExpectation {
     private String method;
     @Column(nullable = false)
     private String path;
-    @Column(length = 1024)
+    @Column(length = 2048)
     private String requestBody;
     @Column(length = 64)
     private String requestBodyType;
