@@ -17,7 +17,7 @@ public class ApiExpectation {
     private String name;
     @Column(nullable = false)
     private Integer groupId;
-    @Column(nullable = false)
+    @Column(nullable = false, updatable = false)
     private Long created;
     @Column(nullable = false)
     private Integer priority;
